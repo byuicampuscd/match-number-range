@@ -15,14 +15,15 @@ function makeErrorMessage(testName, checkName) {
 function runTest(test, regExText) {
    var regEx = new RegExp(regExText);
 
+   console.log(test.name);
+   console.log('\t' + regExText);
    assert(regExText === test.regex, makeErrorMessage(test.name, "expected output"));
    assert(regEx.test(test.upper) === true, makeErrorMessage(test.name, "upper bound"));
    assert(regEx.test(test.lower) === true, makeErrorMessage(test.name, "lower bound"));
    assert(regEx.test(test.mid) === true, makeErrorMessage(test.name, "mid"));
    assert(regEx.test(test.outUpper) === false, makeErrorMessage(test.name, "outside upper bound"));
    assert(regEx.test(test.outLower) === false, makeErrorMessage(test.name, "ouside lower bound"));
-   console.log('PASSED: ' + test.name);
-   console.log('\t' + regExText);
+   console.log('\tPASSED: ' + test.name + '\n');
 }
 
 function runToleranceTest(test) {
