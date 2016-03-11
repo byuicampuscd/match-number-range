@@ -18,27 +18,6 @@ module.exports = (function () {
       }
    }
 
-   function makeBounds(lower, upper, numOfDigits) {
-      return {
-         lower: round(lower, numOfDigits, false),
-         upper: round(upper, numOfDigits, false)
-      };
-   }
-
-   function makeBoundsFromTol(answer, tolerance, numOfDigits) {
-      var lower, upper, tol;
-      if (typeof tolerance === 'string' && tolerance.trim().charAt(tolerance.length - 1) === '%') {
-         //if it is a percent
-         tol = parseFloat(tolerance) / 100 * answer;
-      } else {
-         //if is just a number
-         tol = tolerance;
-      }
-
-      //get base Bounds
-      return makeBounds(answer - tol, answer + tol, numOfDigits);
-   }
-
    function makeStep(numOfDigits) {
       return 1 / Math.pow(10, numOfDigits);
    }
@@ -56,11 +35,12 @@ module.exports = (function () {
          return index;
       }
 
-      var step, i,
+      var i,
+         step = makeStep(numOfDigits),
          possibleNumbers = [],
          numToAdd = bounds.lower;
-      step = makeStep(numOfDigits);
 
+      /*
       //make the list
       for (i = 0; numToAdd <= bounds.upper; i += 1) {
          possibleNumbers.push(numToAdd);
@@ -82,6 +62,15 @@ module.exports = (function () {
       possibleNumbers = possibleNumbers.filter(function (item, count) {
          return itemIndexFromEnd(possibleNumbers, item) === count;
       });
+      */
+
+      //make text counter parts
+      for (i = bounds.lower; i <= bounds.upper; ++i) {
+         possibleNumbers.push({
+            num: i,
+            text: i.toFixed(0)
+         });
+      }
 
       return possibleNumbers;
    }
@@ -98,11 +87,12 @@ module.exports = (function () {
          if (item.text.length !== nextItem.text.length) {
             return true;
          }
-
+         /*
          //cut at decimal moves
          if (item.decPointIndex !== nextItem.decPointIndex) {
             return true;
          }
+         */
 
          //cut at from negitives to non negitive -- im pretty sure length above handles this
          if (item.num < 0 && nextItem.num >= 0) {
@@ -152,26 +142,6 @@ module.exports = (function () {
 
    }
 
-   function fromTolerance(answer, tolerance, numOfDigits) {
-      var bounds = makeBoundsFromTol(answer, tolerance, numOfDigits);
-      return process(bounds, numOfDigits);
-   }
-
-   function fromBounds(lower, upper, numOfDigits) {
-      var bounds,
-         tempBound;
-
-      //make sure they are in the correct order
-      if (lower > upper) {
-         tempBound = lower;
-         lower = upper;
-         upper = tempBound;
-      }
-
-      bounds = makeBounds(lower, upper, numOfDigits);
-      return process(bounds, numOfDigits);
-   }
-
    function process(bounds, numOfDigits) {
       var possibleNumbers,
          listOfLists = [],
@@ -205,6 +175,75 @@ module.exports = (function () {
       regExOut = '(?:' + listOfRegEx.join('|') + ')';
       regExOut = addEnd(regExOut);
       return '^\\s*' + regExOut + '$';
+   }
+
+   function scale(number, numOfDigits) {
+      function trunc(number) {
+         if (number < 0) {
+            return Math.ceil(number);
+         }
+         return Math.floor(number);
+      }
+
+      if (numOfDigits < 0) {
+         //scale up
+         number = number * Math.pow(10, Math.abs(numOfDigits));
+      } else {
+         //scale down
+         if (number.toFixed(0).length <= numOfDigits) {
+            throw "numOfDigits is too high. number: " + number + " numOfDigits: " + numOfDigits;
+         }
+         number = number / Math.pow(10, numOfDigits);
+      }
+
+      //chop the decmal part
+      return trunc(number);
+   }
+
+   function makeBounds(lower, upper, numOfDigits) {
+      var tempBound;
+
+      //make sure they are in the correct order
+      if (lower > upper) {
+         tempBound = lower;
+         lower = upper;
+         upper = tempBound;
+      }
+
+      return {
+         lower: scale(lower, numOfDigits),
+         upper: scale(upper, numOfDigits)
+      };
+   }
+
+   function makeBoundsFromTol(answer, tolerance, numOfDigits) {
+      var lower, upper, tol;
+      if (typeof tolerance === 'string' && tolerance.trim().charAt(tolerance.length - 1) === '%') {
+         //if it is a percent
+         tol = parseFloat(tolerance) / 100 * answer;
+      } else if (typeof tolerance === 'number' && !isNaN(tolerance)) {
+         //if is just a number
+         tol = tolerance;
+      } else {
+         throw "Invalid tolerance";
+      }
+
+      //get base Bounds
+      return makeBounds(answer - tol, answer + tol, numOfDigits);
+   }
+
+   function fromTolerance(answer, tolerance, numOfDigits) {
+      var bounds = makeBoundsFromTol(answer, tolerance, numOfDigits);
+      console.log("bounds:", bounds);
+      console.log("bounds diff:", bounds.upper - bounds.lower);
+      return process(bounds, numOfDigits);
+   }
+
+   function fromBounds(lower, upper, numOfDigits) {
+      var bounds = makeBounds(lower, upper, numOfDigits);
+      console.log("bounds:", bounds);
+      console.log("bounds diff:", bounds.upper - bounds.lower);
+      return process(bounds, numOfDigits);
    }
 
    return {
