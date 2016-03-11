@@ -15,21 +15,24 @@ function makeErrorMessage(testName, checkName) {
 function runTest(test, regExText) {
    var regEx = new RegExp(regExText);
 
+   console.log('\t' + regExText);
    assert(regExText === test.regex, makeErrorMessage(test.name, "expected output"));
    assert(regEx.test(test.upper) === true, makeErrorMessage(test.name, "upper bound"));
    assert(regEx.test(test.lower) === true, makeErrorMessage(test.name, "lower bound"));
    assert(regEx.test(test.mid) === true, makeErrorMessage(test.name, "mid"));
    assert(regEx.test(test.outUpper) === false, makeErrorMessage(test.name, "outside upper bound"));
    assert(regEx.test(test.outLower) === false, makeErrorMessage(test.name, "ouside lower bound"));
-   console.log('PASSED: ' + test.name);
+   console.log('\tPASSED');
 }
 
 function runToleranceTest(test) {
-   runTest(test, matchNumberRange.fromTolerance(test.values.ans, test.values.tol, test.values.dec));
+   console.log('RUNNING: ' + test.name);
+   runTest(test, matchNumberRange.fromTolerance(test.values.ans, test.values.tol, test.values.dec, test.values.needZero));
 }
 
 function runBoundsTest(test) {
-   runTest(test, matchNumberRange.fromBounds(test.values.upper, test.values.lower, test.values.dec));
+   console.log('RUNNING: ' + test.name);
+   runTest(test, matchNumberRange.fromBounds(test.values.upper, test.values.lower, test.values.dec, test.values.needZero));
 }
 
 var testsTol = [{
@@ -37,7 +40,8 @@ var testsTol = [{
    values: {
       ans: 130.25,
       tol: 45,
-      dec: 2
+      dec: 2,
+      needZero: false
    },
    regex: '^\\s*(?:8(?:5\\.(?:2[5-9]|[3-9][0-9])|[6-9]\\.[0-9][0-9])|9[0-9]\\.[0-9][0-9]|1(?:[0-6][0-9]\\.[0-9][0-9]|7(?:[0-4]\\.[0-9][0-9]|5\\.(?:[01][0-9]|2[0-5]))))\\d*\\s*$',
    upper: '175.25',
@@ -50,7 +54,8 @@ var testsTol = [{
    values: {
       ans: 130.25,
       tol: '45%',
-      dec: 2
+      dec: 2,
+      needZero: false
    },
    regex: '^\\s*(?:7(?:1\\.(?:6[4-9]|[7-9][0-9])|[2-9]\\.[0-9][0-9])|[89][0-9]\\.[0-9][0-9]|1(?:[0-7][0-9]\\.[0-9][0-9]|8(?:[0-7]\\.[0-9][0-9]|8\\.(?:[0-7][0-9]|8[0-6]))))\\d*\\s*$',
    upper: '188.86',
@@ -59,11 +64,26 @@ var testsTol = [{
    outUpper: '188.87',
    outLower: '71.60'
 }, {
-   name: "Small Number",
+   name: "Small Number Optional Zero",
    values: {
       ans: 0.0005639,
       tol: 0.000005,
-      dec: 7
+      dec: 7,
+      needZero: false
+   },
+   regex: '^\\s*(?:0?\\.0005(?:5(?:89|9[0-9])|6[0-8][0-9]))\\d*\\s*$',
+   upper: '0.0005689',
+   lower: '0.0005589',
+   mid: '0.0005600',
+   outUpper: '0.0005690',
+   outLower: '0.0005588'
+}, {
+   name: "Small Number Required Zero",
+   values: {
+      ans: 0.0005639,
+      tol: 0.000005,
+      dec: 7,
+      needZero: true
    },
    regex: '^\\s*(?:0\\.0005(?:5(?:89|9[0-9])|6[0-8][0-9]))\\d*\\s*$',
    upper: '0.0005689',
@@ -72,11 +92,26 @@ var testsTol = [{
    outUpper: '0.0005690',
    outLower: '0.0005588'
 }, {
-   name: "Small Number w/Percent",
+   name: "Small Number w/Percent Optional Zero",
    values: {
       ans: 0.0005639,
       tol: '5%',
-      dec: 7
+      dec: 7,
+      needZero: false
+   },
+   regex: '^\\s*(?:0?\\.0005(?:3(?:5[7-9]|[6-9][0-9])|[4-8][0-9][0-9]|9(?:[01][0-9]|2[01])))\\d*\\s*$',
+   upper: '0.0005639',
+   lower: '0.0005357',
+   mid: '0.0005501',
+   outUpper: '0.0005922',
+   outLower: '0.0005350'
+}, {
+   name: "Small Number w/Percent Required Zero",
+   values: {
+      ans: 0.0005639,
+      tol: '5%',
+      dec: 7,
+      needZero: true
    },
    regex: '^\\s*(?:0\\.0005(?:3(?:5[7-9]|[6-9][0-9])|[4-8][0-9][0-9]|9(?:[01][0-9]|2[01])))\\d*\\s*$',
    upper: '0.0005639',
@@ -85,11 +120,12 @@ var testsTol = [{
    outUpper: '0.0005922',
    outLower: '0.0005350'
 }, {
-   name: "Negative to Positive",
+   name: "Negative to Positive Optional Zero",
    values: {
       ans: 0,
       tol: 15,
-      dec: 1
+      dec: 1,
+      needZero: false
    },
    regex: '^\\s*(?:-1(?:[0-4]\\.[0-9]|5\\.0)|-(?:0\\.[1-9]|[1-9]\\.[0-9])|[0-9]\\.[0-9]|1(?:[0-4]\\.[0-9]|5\\.0))\\d*\\s*$',
    upper: '15.0',
@@ -98,11 +134,40 @@ var testsTol = [{
    outUpper: '15.1',
    outLower: '-15.1'
 }, {
-   name: "Negative to Positive w/percent",
+   name: "Negative to Positive Required Zero",
+   values: {
+      ans: 0,
+      tol: 15,
+      dec: 1,
+      needZero: true
+   },
+   regex: '^\\s*(?:-1(?:[0-4]\\.[0-9]|5\\.0)|-(?:0\\.[1-9]|[1-9]\\.[0-9])|[0-9]\\.[0-9]|1(?:[0-4]\\.[0-9]|5\\.0))\\d*\\s*$',
+   upper: '15.0',
+   lower: '-15.0',
+   mid: '1.02',
+   outUpper: '15.1',
+   outLower: '-15.1'
+}, {
+   name: "Negative to Positive w/percent Optional Zero",
    values: {
       ans: 10,
       tol: '200%',
-      dec: 0
+      dec: 0,
+      needZero: false
+   },
+   regex: '^\\s*(?:-10|-[1-9]|[0-9]|[12][0-9]|30)(?:\\.\\d*)?\\s*$',
+   upper: '30',
+   lower: '-10',
+   mid: '1',
+   outUpper: '31.25',
+   outLower: '-11'
+}, {
+   name: "Negative to Positive w/percent Required Zero",
+   values: {
+      ans: 10,
+      tol: '200%',
+      dec: 0,
+      needZero: true
    },
    regex: '^\\s*(?:-10|-[1-9]|[0-9]|[12][0-9]|30)(?:\\.\\d*)?\\s*$',
    upper: '30',
