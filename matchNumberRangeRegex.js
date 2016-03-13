@@ -22,6 +22,31 @@ module.exports = (function () {
       return 1 / Math.pow(10, numOfDigits);
    }
 
+   function numberToString(number, numOfDigits) {
+      function repeat(char, length) {
+         var i, strOut = '';
+         for (i = 0; i < length; ++i) {
+            strOut += char;
+         }
+         return strOut;
+      }
+
+      var numText = number.toFixed(0);
+      //left or right of decimal
+      if (numOfDigits < 0) {
+         //is the point in the number or not 
+         if (Math.abs(numOfDigits) >= numText.length) {
+            return '0.' + repeat('0', Math.abs(numOfDigits) - numText.length) + numText;
+         } else {
+            //the point is in the number
+            //numOfDigits is negitive so
+            return numText.substr(0, numText.length + numOfDigits) + '.' + numText.substr(numOfDigits);
+         }
+      } else {
+         return numText + repeat('d', numOfDigits);
+      }
+   }
+
    function makeList(bounds, numOfDigits) {
       function itemIndexFromEnd(possibleNumbers, item) {
          var index = possibleNumbers.length,
@@ -68,10 +93,12 @@ module.exports = (function () {
       for (i = bounds.lower; i <= bounds.upper; ++i) {
          possibleNumbers.push({
             num: i,
-            text: i.toFixed(0)
+            text: numberToString(i, numOfDigits)
          });
       }
-
+      console.dir(possibleNumbers, {
+         depth: null
+      });
       return possibleNumbers;
    }
 

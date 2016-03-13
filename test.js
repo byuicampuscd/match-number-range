@@ -2,10 +2,11 @@
 /*global */
 
 "use strict";
-//var run = require('./matchNumberRangeRegex.js');
-//console.log(run.fromTolerance(1000, 2, 0));
+var run = require('./matchNumberRangeRegex.js');
+//console.log(run.fromTolerance(0.00001234, "3%", -8));
+console.log(run.fromTolerance(12340, "3%", 1));
 //console.log(run.fromTolerance(562500000, "3%", 6, false));
-
+/*
 function trieFromList(list) {
    var Trie = require('trie-hard'),
       trie = new Trie();
@@ -45,7 +46,7 @@ possibleNumbers = [
    "400",
    "500"
 ];
-toRegEx(possibleNumbers);
+//toRegEx(possibleNumbers);
 
 possibleNumbers = [
    "100",
@@ -54,4 +55,14 @@ possibleNumbers = [
    "400",
    "500"
 ];
-toRegEx(possibleNumbers);
+//toRegEx(possibleNumbers);
+
+function test(numText, numOfDigits) {
+   return numText.substr(0, numText.length + numOfDigits) + '.' + numText.substr(numOfDigits);
+}
+var i,
+   text = '1234';
+for (i = 1; i <= text.length; ++i) {
+   console.log('i:', test(text, -i));
+}
+*/
