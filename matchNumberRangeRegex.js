@@ -3,25 +3,6 @@
 "use strict";
 
 module.exports = (function () {
-   function round(number, numOfDigits, makeTextOn) {
-      var textOut;
-
-      //round to text
-
-      textOut = number.toFixed(numOfDigits);
-
-      //return as number or text
-      if (makeTextOn) {
-         return textOut;
-      } else {
-         return Number(textOut);
-      }
-   }
-
-   function makeStep(numOfDigits) {
-      return 1 / Math.pow(10, numOfDigits);
-   }
-
    function numberToString(number, numOfDigits) {
       function repeat(char, length) {
          var i, strOut = '';
@@ -69,9 +50,7 @@ module.exports = (function () {
       }
 
       var i,
-         step = makeStep(numOfDigits),
-         possibleNumbers = [],
-         numToAdd = bounds.lower;
+         possibleNumbers = [];
 
       //make text counter parts
       for (i = bounds.lower; i <= bounds.upper; ++i) {
@@ -90,18 +69,10 @@ module.exports = (function () {
 
       }
 
-      //print
-      /*
-      if (bounds.diff < 5000) {
-         console.dir(possibleNumbers, {
-            depth: null
-         });
-      }
-      */
       return possibleNumbers;
    }
 
-   function makeCuts(possibleNumbers, listOfLists) {
+   function makeCuts(possibleNumbers) {
       function cutNow(item, nextItem) {
 
          //at end of array
@@ -117,6 +88,7 @@ module.exports = (function () {
          return false;
       }
       var lastCut = 0,
+         listOfLists = [],
          i;
 
       for (i = 0; i < possibleNumbers.length; ++i) {
@@ -125,6 +97,7 @@ module.exports = (function () {
             lastCut = i + 1;
          }
       }
+      return listOfLists;
    }
 
    function trieFromList(list) {
@@ -136,18 +109,10 @@ module.exports = (function () {
          trie.add(item.text);
       });
 
-      return trie;
+      return trie.toObject();
    }
 
-   function debugData(data) {
-      //print possibleNumbers
-      console.log('************ DEBUG ************');
-      console.log(data.possibleNumbers.map(function (item) {
-         return item.text;
-      }));
-      console.log('************ END DEBUG ************');
-   }
-
+   // addEnd is used to attach the ending to allow for extra digits past required presicion 
    function addEnd(text) {
       var reg = '';
       if (text.indexOf('.') !== -1) {
@@ -161,40 +126,24 @@ module.exports = (function () {
 
    function process(bounds, numOfDigits) {
       var possibleNumbers,
-         listOfLists = [],
+         possiblesCutUp,
          listOfRegEx = [],
-         listOfTries = [],
          trieToRegEx = require('./trieToRegEx.js'),
-         data,
          regExOut;
+
+      //make the list
       possibleNumbers = makeList(bounds, numOfDigits);
 
       //cut it up in to legal lists 
-      makeCuts(possibleNumbers, listOfLists);
+      possiblesCutUp = makeCuts(possibleNumbers);
 
       //regexs from lists
-      listOfLists.forEach(function (list) {
-         var trie = trieFromList(list).toObject();
-         //listOfTries.push(trie);
-         listOfRegEx.push(trieToRegEx(trie));
-         //FIX when you don't need check your lists any more
-         //listOfRegEx.push(trieToRegEx(trieFromList(list).toObject()));
+      possiblesCutUp.forEach(function (list) {
+         listOfRegEx.push(trieToRegEx(trieFromList(list)));
       });
 
-      //FIX when you don't need check your lists any more
-
-      /*
-      data = {
-         possibleNumbers: possibleNumbers,
-         listOfLists: listOfLists,
-         listOfTries: listOfTries,
-         listOfRegEx: listOfRegEx
-      };
-      */
-      //debugData(data);
-
       regExOut = '(?:' + listOfRegEx.join('|') + ')';
-      // addEnd is used to attach the optional ending for extra digits past required presicion 
+      // addEnd is used to attach the ending to allow for extra digits past required presicion 
       regExOut = addEnd(regExOut);
       return '^\\s*' + regExOut + '$';
    }
