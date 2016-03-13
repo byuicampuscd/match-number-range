@@ -171,7 +171,7 @@ module.exports = (function () {
                textOut += kids[0];
             }
          }
-         // addEnd is used to attach the optional ending for extra digits past required presicion 
+
          return textOut;
       });
    }
