@@ -62,7 +62,7 @@ module.exports = (function () {
 
    //check if a char is on the naughty list and escape it
    function excape(char, isInCharSet) {
-      var badAlways = ['.'],
+      var badAlways = ['.', 'd'],
          badInCharSet = ['-'],
          excapeChar = '';
       //badInCharSet needs to have all
@@ -120,7 +120,7 @@ module.exports = (function () {
       return textOut;
    }
 
-   //makes regular expresions that look like [0-9] or the negitive sign or the decimal point
+   //makes regular expresions that look like [0-6] or \d or the negitive sign or the decimal point 
    function makeCharSet(list) {
       function numEqIndex(num, index) {
          return +num === index;
