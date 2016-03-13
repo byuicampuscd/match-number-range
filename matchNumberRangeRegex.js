@@ -31,19 +31,27 @@ module.exports = (function () {
          return strOut;
       }
 
-      var numText = number.toFixed(0);
+      var numText, sign;
+
+      //get the sign and then kill it
+      sign = 1 / number >= 0 ? '' : '-';
+      number = Math.abs(number);
+
+      //now make text
+      numText = number.toFixed(0);
+
       //left or right of decimal
       if (numOfDigits < 0) {
          //is the point in the number or not 
          if (Math.abs(numOfDigits) >= numText.length) {
-            return '0.' + repeat('0', Math.abs(numOfDigits) - numText.length) + numText;
+            return sign + '0?.' + repeat('0', Math.abs(numOfDigits) - numText.length) + numText;
          } else {
             //the point is in the number
             //numOfDigits is negitive so
-            return numText.substr(0, numText.length + numOfDigits) + '.' + numText.substr(numOfDigits);
+            return sign + numText.substr(0, numText.length + numOfDigits) + '.' + numText.substr(numOfDigits);
          }
       } else {
-         return numText + repeat('d', numOfDigits);
+         return sign + numText + repeat('d', numOfDigits);
       }
    }
 
@@ -65,44 +73,35 @@ module.exports = (function () {
          possibleNumbers = [],
          numToAdd = bounds.lower;
 
-      /*
-      //make the list
-      for (i = 0; numToAdd <= bounds.upper; i += 1) {
-         possibleNumbers.push(numToAdd);
-         //this is for floating point math, to fix the 0 not being 0 problem
-         numToAdd = bounds.lower + (i * step);
-      }
-
-      //make text counter parts
-      possibleNumbers = possibleNumbers.map(function (item) {
-         var itemText = round(item, numOfDigits, true);
-         return {
-            num: item,
-            text: itemText,
-            decPointIndex: itemText.indexOf('.')
-         };
-      });
-
-      //make sure only has unique numbers
-      possibleNumbers = possibleNumbers.filter(function (item, count) {
-         return itemIndexFromEnd(possibleNumbers, item) === count;
-      });
-      */
-
       //make text counter parts
       for (i = bounds.lower; i <= bounds.upper; ++i) {
+         //This makes sure that -0 gets added to the list when for numbers like -0.0\d*
+         if (i === 0 && bounds.lower < 0 && bounds.upper >= 0) {
+            possibleNumbers.push({
+               num: -0,
+               text: numberToString(-0, numOfDigits)
+            });
+         }
+
          possibleNumbers.push({
             num: i,
             text: numberToString(i, numOfDigits)
          });
+
       }
-      console.dir(possibleNumbers, {
-         depth: null
-      });
+
+      //print
+      /*
+      if (bounds.diff < 5000) {
+         console.dir(possibleNumbers, {
+            depth: null
+         });
+      }
+      */
       return possibleNumbers;
    }
 
-   function simpleCuts(possibleNumbers, listOfLists) {
+   function makeCuts(possibleNumbers, listOfLists) {
       function cutNow(item, nextItem) {
 
          //at end of array
@@ -114,22 +113,12 @@ module.exports = (function () {
          if (item.text.length !== nextItem.text.length) {
             return true;
          }
-         /*
-         //cut at decimal moves
-         if (item.decPointIndex !== nextItem.decPointIndex) {
-            return true;
-         }
-         */
-
-         //cut at from negitives to non negitive -- im pretty sure length above handles this
-         if (item.num < 0 && nextItem.num >= 0) {
-            return true;
-         }
 
          return false;
       }
       var lastCut = 0,
          i;
+
       for (i = 0; i < possibleNumbers.length; ++i) {
          if (cutNow(possibleNumbers[i], possibleNumbers[i + 1])) {
             listOfLists.push(possibleNumbers.slice(lastCut, i + 1));
@@ -146,6 +135,7 @@ module.exports = (function () {
       list.forEach(function (item, count) {
          trie.add(item.text);
       });
+
       return trie;
    }
 
@@ -179,27 +169,32 @@ module.exports = (function () {
          regExOut;
       possibleNumbers = makeList(bounds, numOfDigits);
 
-      //cut it up
-      simpleCuts(possibleNumbers, listOfLists);
+      //cut it up in to legal lists 
+      makeCuts(possibleNumbers, listOfLists);
 
       //regexs from lists
       listOfLists.forEach(function (list) {
          var trie = trieFromList(list).toObject();
-         listOfTries.push(trie);
+         //listOfTries.push(trie);
          listOfRegEx.push(trieToRegEx(trie));
          //FIX when you don't need check your lists any more
          //listOfRegEx.push(trieToRegEx(trieFromList(list).toObject()));
       });
 
       //FIX when you don't need check your lists any more
+
+      /*
       data = {
          possibleNumbers: possibleNumbers,
          listOfLists: listOfLists,
          listOfTries: listOfTries,
          listOfRegEx: listOfRegEx
       };
+      */
       //debugData(data);
+
       regExOut = '(?:' + listOfRegEx.join('|') + ')';
+      // addEnd is used to attach the optional ending for extra digits past required presicion 
       regExOut = addEnd(regExOut);
       return '^\\s*' + regExOut + '$';
    }
@@ -228,7 +223,8 @@ module.exports = (function () {
    }
 
    function makeBounds(lower, upper, numOfDigits) {
-      var tempBound;
+      var tempBound,
+         bounds;
 
       //make sure they are in the correct order
       if (lower > upper) {
@@ -237,10 +233,13 @@ module.exports = (function () {
          upper = tempBound;
       }
 
-      return {
+      bounds = {
          lower: scale(lower, numOfDigits),
          upper: scale(upper, numOfDigits)
       };
+      bounds.diff = bounds.upper - bounds.lower;
+
+      return bounds;
    }
 
    function makeBoundsFromTol(answer, tolerance, numOfDigits) {

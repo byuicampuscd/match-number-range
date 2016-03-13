@@ -4,7 +4,8 @@
 "use strict";
 var run = require('./matchNumberRangeRegex.js');
 //console.log(run.fromTolerance(0.00001234, "3%", -8));
-console.log(run.fromTolerance(12340, "3%", 1));
+console.log(run.fromTolerance(1.12, 2, -3));
+//console.log(run.fromTolerance(12340, "3%", 1));
 //console.log(run.fromTolerance(562500000, "3%", 6, false));
 /*
 function trieFromList(list) {
