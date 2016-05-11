@@ -140,7 +140,7 @@
             regex = matchNumberRegex.fromBounds(upper, lower, round);
          } catch (err) {
             console.log(upper, lower, round, regex);
-//            alert(err.replace(/numOfDigits/g, 'Round to setting'));
+            alert(err.replace(/numOfDigits/g, 'Round to setting'));
             return;
          }
          console.log(upper, lower, round, regex);
@@ -158,7 +158,7 @@
             regex = matchNumberRegex.fromTolerance(answer, tolerance, round);
          } catch (err) {
             console.log(answer, tolerance, round, regex);
-//            alert(err.replace(/numOfDigits/g, 'Round to setting'));
+            alert(err.replace(/numOfDigits/g, 'Round to setting'));
             return;
          }
 
@@ -178,7 +178,7 @@
             regex = matchNumberRegex.fromTolerance(answer, tolerance, round);
          } catch (err) {
             console.log(answer, tolerance, round, regex);
-//            alert(err.replace(/numOfDigits/g, 'Round to setting'));
+            alert(err.replace(/numOfDigits/g, 'Round to setting'));
             return;
          }
          console.log(answer, tolerance, round, regex);
