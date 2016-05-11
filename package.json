@@ -8,12 +8,15 @@
       "trie-hard": "^0.1.0"
    },
    "devDependencies": {
-      "coffeeify": "^2.0.1"
+      "coffeeify": "^2.0.1",
+      "tape": "^4.5.1"
    },
    "scripts": {
-      "test": "echo \"Error: no test specified\" && exit 1",
+      "test": "tape tests/*.js | tap-diff",
+      "testNoColor": "tape tests/*.js",
       "makeBrowser": "browserify -g coffeeify --extension=\".coffee\" -r ./matchNumberRangeRegex.js  -s matchNumberRegex -o dist/matchNumberRegexBrowser.js",
-      "server": "live-server --port=9001"
+      "server": "live-server --port=9001",
+      "start": "watchify -g coffeeify --extension=\".coffee\" -r ./matchNumberRangeRegex.js  -s matchNumberRegex -o dist/matchNumberRegexBrowser.js -v"
    },
    "author": "Joshua McKinney",
    "license": "UNLICENCED"
