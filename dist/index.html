@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title></title>
+   <style>
+      label {
+         display: block;
+         margin-bottom: 5px;
+      }
+      
+      #output {
+         width: 80%;
+         font-size: 20px;
+      }
+   </style>
+</head>
+
+<body>
+   <h1>Regex Number Range Maker</h1>
+   <h2>Known Bounds</h2>
+   <label>Upper
+      <input id="kBUpper" type="number">
+   </label>
+   <label>Lower
+      <input id="kBLower" type="number">
+   </label>
+   <label>Round to
+      <select id="kBRound" class="numOfDigits">
+         <option value="8">10^8</option>
+         <option value="7">10^7</option>
+         <option value="6">10^6</option>
+         <option value="5">10^5</option>
+         <option value="4">10^4</option>
+         <option value="3">10^3</option>
+         <option value="2">10^2</option>
+         <option value="1">10</option>
+         <option value="0" selected>0</option>
+         <option value="-1">10^-1</option>
+         <option value="-2">10^-2</option>
+         <option value="-3">10^-3</option>
+         <option value="-4">10^-4</option>
+         <option value="-5">10^-5</option>
+         <option value="-6">10^-6</option>
+         <option value="-7">10^-7</option>
+         <option value="-8">10^-8</option>
+      </select>
+   </label>
+
+   <button onclick="kBGo();">Go!</button>
+
+   <h2>Bounds Calculated From Answer by Using Percent Tolerance</h2>
+   <label>Answer
+      <input id="pTAnswer" type="number">
+   </label>
+   <label>Tolerance
+      <input id="pTTolerance" type="number">%
+   </label>
+   <label>Round to
+      <select id="pTRound" class="numOfDigits">
+         <option value="8">10^8</option>
+         <option value="7">10^7</option>
+         <option value="6">10^6</option>
+         <option value="5">10^5</option>
+         <option value="4">10^4</option>
+         <option value="3">10^3</option>
+         <option value="2">10^2</option>
+         <option value="1">10</option>
+         <option value="0" selected>0</option>
+         <option value="-1">10^-1</option>
+         <option value="-2">10^-2</option>
+         <option value="-3">10^-3</option>
+         <option value="-4">10^-4</option>
+         <option value="-5">10^-5</option>
+         <option value="-6">10^-6</option>
+         <option value="-7">10^-7</option>
+         <option value="-8">10^-8</option>
+      </select>
+   </label>
+
+   <button onclick="pTGo();">Go!</button>
+
+   <h2>Bounds Caculated From Answer by Using Tolerance</h2>
+   <label>Answer
+      <input id="nTAnswer" type="number">
+   </label>
+   <label>Tolerance
+      <input id="nTTolerance" type="number">
+   </label>
+   <label>Round to
+      <select id="nTRound" class="numOfDigits">
+         <option value="8">10^8</option>
+         <option value="7">10^7</option>
+         <option value="6">10^6</option>
+         <option value="5">10^5</option>
+         <option value="4">10^4</option>
+         <option value="3">10^3</option>
+         <option value="2">10^2</option>
+         <option value="1">10</option>
+         <option value="0" selected>0</option>
+         <option value="-1">10^-1</option>
+         <option value="-2">10^-2</option>
+         <option value="-3">10^-3</option>
+         <option value="-4">10^-4</option>
+         <option value="-5">10^-5</option>
+         <option value="-6">10^-6</option>
+         <option value="-7">10^-7</option>
+         <option value="-8">10^-8</option>
+      </select>
+   </label>
+
+   <button onclick="nTGo();">Go!</button>
+
+   <h2>Generated Regular Expression</h2>
+   <input readonly id="output">
+
+   <h3 style="display: none;">Copied to clipboard!</h3>
+
+   <script src="matchNumberRegexBrowser.js"></script>
+   <script>
+      function highlightCopy() {
+         document.querySelector("#output").select();
+         document.execCommand("copy");
+         
+         document.querySelector("h3").style.display = "block";
+
+         setTimeout(function () {
+            document.querySelector("h3").style.display = "none";
+         }, 4000);
+      }
+
+      function kBGo() {
+         var upper = +document.querySelector("#kBUpper").value,
+            lower = +document.querySelector("#kBLower").value,
+            round = +document.querySelector("#kBRound").value,
+            regex;
+         try {
+            regex = matchNumberRegex.fromBounds(upper, lower, round);
+         } catch (err) {
+            console.log(upper, lower, round, regex);
+            alert(err.replace(/numOfDigits/g, 'Round to setting'));
+            return;
+         }
+         console.log(upper, lower, round, regex);
+         document.querySelector("#output").value = regex;
+         highlightCopy();
+      }
+
+      function pTGo() {
+         var answer = +document.querySelector("#pTAnswer").value,
+            tolerance = document.querySelector("#pTTolerance").value + "%",
+            round = +document.querySelector("#pTRound").value,
+            regex;
+
+         try {
+            regex = matchNumberRegex.fromTolerance(answer, tolerance, round);
+         } catch (err) {
+            console.log(answer, tolerance, round, regex);
+            alert(err.replace(/numOfDigits/g, 'Round to setting'));
+            return;
+         }
+
+         console.log(answer, tolerance, round, regex);
+
+         document.querySelector("#output").value = regex;
+         highlightCopy();
+      }
+
+      function nTGo() {
+         var answer = +document.querySelector("#nTAnswer").value,
+            tolerance = +document.querySelector("#nTTolerance").value,
+            round = +document.querySelector("#nTRound").value,
+            regex;
+
+         try {
+            regex = matchNumberRegex.fromTolerance(answer, tolerance, round);
+         } catch (err) {
+            console.log(answer, tolerance, round, regex);
+            alert(err.replace(/numOfDigits/g, 'Round to setting'));
+            return;
+         }
+         console.log(answer, tolerance, round, regex);
+
+         document.querySelector("#output").value = regex;
+         highlightCopy();
+      }
+   </script>
+</body>
+
+</html>
