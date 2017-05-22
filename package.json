@@ -1,5 +1,5 @@
 {
-   "name": "number-range-regex",
+   "name": "match-number-range",
    "version": "1.0.0",
    "description": "This converts number with a tolerance into a regular expression that matches it",
    "main": "matchNumberRangeRegex.js",
