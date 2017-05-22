@@ -19,5 +19,6 @@
       "start": "watchify -g coffeeify --extension=\".coffee\" -r ./matchNumberRangeRegex.js  -s matchNumberRegex -o dist/matchNumberRegexBrowser.js -v"
    },
    "author": "Joshua McKinney",
-   "license": "UNLICENCED"
+   "license": "UNLICENSED"
 }
+   
